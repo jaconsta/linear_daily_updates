@@ -46,7 +46,7 @@ pub struct PageInfo {
     pub has_next_page: bool,
 }
 
-#[derive(cynic::QueryFragment, Debug)]
+#[derive(cynic::QueryFragment, Debug, Clone)]
 pub struct Issue {
     pub description: Option<String>,
     pub history: IssueHistoryConnection,
@@ -63,28 +63,28 @@ pub struct Issue {
     pub identifier: String,
 }
 
-#[derive(cynic::QueryFragment, Debug)]
+#[derive(cynic::QueryFragment, Debug, Clone)]
 pub struct User {
     pub display_name: String,
     pub name: String,
 }
 
-#[derive(cynic::QueryFragment, Debug)]
+#[derive(cynic::QueryFragment, Debug, Clone)]
 pub struct IssueLabelConnection {
     pub nodes: Vec<IssueLabel>,
 }
 
-#[derive(cynic::QueryFragment, Debug)]
+#[derive(cynic::QueryFragment, Debug, Clone)]
 pub struct IssueLabel {
     pub name: String,
 }
 
-#[derive(cynic::QueryFragment, Debug)]
+#[derive(cynic::QueryFragment, Debug, Clone)]
 pub struct IssueHistoryConnection {
     pub nodes: Vec<IssueHistory>,
 }
 
-#[derive(cynic::QueryFragment, Debug)]
+#[derive(cynic::QueryFragment, Debug, Clone)]
 pub struct IssueHistory {
     pub id: cynic::Id,
     pub from_title: Option<String>,
@@ -104,7 +104,7 @@ pub struct IssueHistory {
 //     pub type_: String,
 // }
 
-#[derive(cynic::QueryFragment, Debug)]
+#[derive(cynic::QueryFragment, Debug, Clone)]
 pub struct WorkflowState {
     pub name: String,
     // #[cynic(rename = "type")]
