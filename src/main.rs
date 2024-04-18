@@ -9,13 +9,13 @@ use cynic::{http::ReqwestExt, QueryBuilder};
 use reqwest::header::{HeaderMap, AUTHORIZATION};
 
 static MORE_THAN_ONE_DAY: i64 = 30;
-static TEAM_SEARCH: &str = "AWA";
+static TEAM_SEARCH: &'static str = "AWA";
+static GRAPHQL_API: &'static str = "https://api.linear.app/graphql";
 
 use crate::queries::structs::{
     active_issues::{
         ActiveIssuesQuery, ActiveIssuesVariables, DoneIssuesQuery, Issue, TodoIssuesQuery,
     },
-    projects::ListProjectsQuery,
     schema::DateTime,
     teams::TeamsQuery,
 };
@@ -50,9 +50,7 @@ async fn get_tasks(team_id: &str) -> Result<Vec<Issue>, Box<dyn std::error::Erro
 
     let mut unclassified_tasks: Vec<Issue> = Vec::new();
 
-    let issues_request_base = client
-        .post("https://api.linear.app/graphql")
-        .headers(headers.clone());
+    let issues_request_base = client.post(GRAPHQL_API).headers(headers.clone());
 
     let issues_request = issues_request_base.run_graphql(done_issues_operation);
     let issues_response = issues_request.await?;
@@ -64,7 +62,6 @@ async fn get_tasks(team_id: &str) -> Result<Vec<Issue>, Box<dyn std::error::Erro
         )));
     }
 
-    // let now = chrono::Local::now().naive_utc();
     if let Some(data_res) = &issues_response.data {
         if data_res.issues.page_info.has_next_page {
             println!(
@@ -80,9 +77,7 @@ async fn get_tasks(team_id: &str) -> Result<Vec<Issue>, Box<dyn std::error::Erro
 
     // ---
 
-    let issues_request_base = client
-        .post("https://api.linear.app/graphql")
-        .headers(headers.clone());
+    let issues_request_base = client.post(GRAPHQL_API).headers(headers.clone());
     let issues_request = issues_request_base.run_graphql(active_issues_operation);
     let issues_response = issues_request.await?;
 
@@ -108,9 +103,7 @@ async fn get_tasks(team_id: &str) -> Result<Vec<Issue>, Box<dyn std::error::Erro
 
     // ---
 
-    let issues_request_base = client
-        .post("https://api.linear.app/graphql")
-        .headers(headers.clone());
+    let issues_request_base = client.post(GRAPHQL_API).headers(headers.clone());
     let issues_request = issues_request_base.run_graphql(todo_issues_operation);
     let issues_response = issues_request.await?;
 
@@ -145,22 +138,15 @@ async fn get_tasks(team_id: &str) -> Result<Vec<Issue>, Box<dyn std::error::Erro
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv()?;
-    let _projects_operation = ListProjectsQuery::build(());
     let teams_operation = TeamsQuery::build(());
 
     let client = reqwest::Client::new();
     let mut headers = HeaderMap::new();
     headers.insert(AUTHORIZATION, env::var("LINEAR_TOKEN")?.parse()?);
 
-    // let projects_response = client
-    //     .post("https://api.linear.app/graphql")
-    //     .headers(headers)
-    //     .run_graphql(projects_operation)
-    //     .await?;
-
     println!("Getting teams information! ");
     let teams_response = client
-        .post("https://api.linear.app/graphql")
+        .post(GRAPHQL_API)
         .headers(headers.clone())
         .run_graphql(teams_operation)
         .await?;
@@ -176,12 +162,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             if team.key == TEAM_SEARCH {
                 team_id = team.id.inner();
             }
-            println!(
-                "Team name {}, prefix {}, members {}",
-                team.name,
-                team.key,
-                team.members.nodes.len()
-            );
         }
     }
     println!(
